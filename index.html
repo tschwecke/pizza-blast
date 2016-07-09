@@ -1,0 +1,200 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>hello phaser!</title>
+        <script src="vendor/phaser.js"></script>
+
+        <script type="text/javascript">
+            var nextFire = 0;
+
+
+            window.game = {};
+            window.cheese = {
+                fireRate: 100
+            };
+            window.player = {
+                speed: 5,
+                moveUp: function() {
+                    phaserPlayer.body.y -= this.speed;
+                },
+                moveDown: function(speed) {
+                    phaserPlayer.body.y += this.speed;
+                },
+                moveLeft: function(speed) {
+                    phaserPlayer.body.x -= this.speed;
+                },
+                moveRight: function(speed) {
+                    phaserPlayer.body.x += this.speed;
+                },
+                fire: function() {
+                    if (phaserGame.time.now > nextFire && phaserBullets.countDead() > 0)
+                    {
+                        nextFire = phaserGame.time.now + window.cheese.fireRate;
+
+                        var bullet = phaserBullets.getFirstDead();
+
+                        bullet.reset(phaserPlayer.x - 8, phaserPlayer.y - 8);
+
+                        phaserGame.physics.arcade.moveToPointer(bullet, 300);
+                    }
+                }
+            };
+        </script>
+
+        <script src="sam/game/game.js"></script>
+        <script src="sam/player/player.js"></script>
+    </head>
+    <body>
+
+    <script type="text/javascript">
+    var NINETY_DEGREES = 1.5708;
+
+    window.onload = function() {
+
+window.phaserGame = new Phaser.Game(window.innerWidth, window.innerHeight, Phaser.CANVAS, 'phaser-example', { preload: preload, create: create, update: update, render: render });
+
+
+function preload() {
+
+    phaserGame.load.image('background','sam/game/background.jpg');
+    phaserGame.load.image('player','sam/player/player.png');
+    phaserGame.load.image('cheese','sam/cheese/cheese.png');
+
+}
+
+var cursors;
+
+function create() {
+
+    phaserGame.add.tileSprite(0, 0, game.worldWidth, game.worldHeight, 'background');
+
+    phaserGame.world.setBounds(0, 0, game.worldWidth, game.worldHeight);
+
+    phaserGame.physics.startSystem(Phaser.Physics.ARCADE);
+
+    window.phaserPlayer = phaserGame.add.sprite(phaserGame.world.centerX, phaserGame.world.centerY, 'player');
+    phaserPlayer.anchor.set(0.5, 0.5);
+
+    phaserGame.physics.arcade.enable(phaserPlayer);
+
+    cursors = phaserGame.input.keyboard.createCursorKeys();
+
+    phaserGame.camera.follow(phaserPlayer);
+
+
+    //Bullet
+    phaserBullets = phaserGame.add.group();
+    phaserBullets.enableBody = true;
+    phaserBullets.physicsBodyType = Phaser.Physics.ARCADE;
+
+    phaserBullets.createMultiple(50, 'cheese');
+    phaserBullets.setAll('checkWorldBounds', true);
+    phaserBullets.setAll('outOfBoundsKill', true);
+
+
+}
+
+function update() {
+
+/*
+Old Code
+    phaserPlayer.body.setZeroRotation();
+
+    //Calculate mouse rotation relative to player
+    var player_x = phaserPlayer.world.x;
+    var player_y = phaserPlayer.world.y;
+    var mouse_x = phaserGame.input.mousePointer.worldX;
+    var mouse_y = phaserGame.input.mousePointer.worldY;
+
+    var origin_x = mouse_x - player_x;
+    var origin_y = mouse_y - player_y;
+
+    var radians = Math.atan(origin_y / origin_x);
+    var adjustedRadians = radians + (Math.PI / 2);
+    if(mouse_x < player_x) {
+        adjustedRadians += Math.PI;
+    }
+
+    //Calculate player rotation
+    playerRotation = phaserPlayer.rotation % (2 * Math.PI);
+    if(playerRotation < 0) {
+        playerRotation += 2 * Math.PI;
+    }
+
+
+    //Determine which direction to turn
+    var direction;
+    if(Math.abs(adjustedRadians - playerRotation) > 0.1) {
+        if(adjustedRadians < Math.PI) {
+            if(playerRotation > adjustedRadians && playerRotation < (adjustedRadians + Math.PI)) {
+                direction = 'left';
+            }
+            else {
+                direction = 'right';
+            }
+        }
+        else {
+            if(playerRotation < adjustedRadians && playerRotation > (adjustedRadians - Math.PI)) {
+                direction = 'right';
+            }
+            else {
+                direction = 'left';
+            }
+
+        }
+    }
+
+    //Turn the player toward the cursor
+    if(direction === 'right') {
+        phaserPlayer.body.rotateRight(player.spinSpeed);
+
+    }
+    else if(direction === 'left') {
+         phaserPlayer.body.rotateLeft(player.spinSpeed);
+    }
+
+*/
+
+    phaserPlayer.rotation = phaserGame.physics.arcade.angleToPointer(phaserPlayer) + NINETY_DEGREES;
+
+    //Move the player
+    //phaserPlayer.body.setZeroVelocity();
+
+    if (cursors.up.isDown && player.whenUpArrowIsPressed)
+    {
+        player.whenUpArrowIsPressed();
+    }
+    else if (cursors.down.isDown && player.whenDownArrowIsPressed)
+    {
+        player.whenDownArrowIsPressed();
+    }
+
+    if (cursors.left.isDown && player.whenLeftArrowIsPressed)
+    {
+        player.whenLeftArrowIsPressed();
+    }
+    else if (cursors.right.isDown && player.whenRightArrowIsPressed)
+    {
+        player.whenRightArrowIsPressed();
+    }
+
+    if(phaserGame.input.activePointer.isDown && player.whenMouseClicked)
+    {
+        player.whenMouseClicked();
+    }
+}
+
+function render() {
+
+    phaserGame.debug.cameraInfo(phaserGame.camera, 32, 32);
+    phaserGame.debug.spriteCoords(phaserPlayer, 32, 500);
+
+}
+
+    };
+
+    </script>
+
+    </body>
+</html>

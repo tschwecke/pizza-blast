@@ -1,0 +1,3 @@
+
+cheese.fireRate = 100;
+
